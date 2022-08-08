@@ -1,10 +1,47 @@
 import os
+import requests
+import tarfile
+import zipfile
+import gzip
 from os.path import join as pj
 import pandas as pd
 
 
-def data_loader(path_to_image_dir: str = pj('dataset', 'images'),
-                path_to_annotation_file: str = pj('dataset', 'annotations.csv')):
+def wget(url, cache_dir: str = '.'):
+    """ wget and uncompress """
+    os.makedirs(cache_dir, exist_ok=True)
+    filename = os.path.basename(url)
+    path = pj(cache_dir, filename)
+    if not os.path.exists(path):
+        with open(path, "wb") as f:
+            r = requests.get(url)
+            f.write(r.content)
+    if path.endswith('.tar.gz') or path.endswith('.tgz') or path.endswith('.tar'):
+        if path.endswith('.tar'):
+            tar = tarfile.open(path)
+        else:
+            tar = tarfile.open(path, "r:gz")
+        tar.extractall(cache_dir)
+        tar.close()
+        os.remove(path)
+    elif path.endswith('.zip'):
+        with zipfile.ZipFile(path, 'r') as zip_ref:
+            zip_ref.extractall(cache_dir)
+        os.remove(path)
+    elif path.endswith('.gz'):
+        with gzip.open(path, 'rb') as f:
+            with open(path.replace('.gz', ''), 'wb') as f_write:
+                f_write.write(f.read())
+        os.remove(path)
+
+
+def data_loader(path_to_dataset: str = 'dataset'):
+    if not os.path.exists(path_to_dataset):
+        wget('https://github.com/asahi417/vwsd_experiment/releases/download/dataset/dataset.zip',
+             cache_dir=os.path.dirname(path_to_dataset))
+
+    path_to_image_dir = pj(path_to_dataset, 'images')
+    path_to_annotation_file = pj(path_to_dataset, 'annotations.csv')
     assert os.path.exists(path_to_annotation_file), f'annotation not found at {path_to_annotation_file}'
     assert os.path.isdir(path_to_image_dir), f'images not found at {path_to_image_dir}'
     annotation = pd.read_csv(path_to_annotation_file)
@@ -26,7 +63,3 @@ def data_loader(path_to_image_dir: str = pj('dataset', 'images'),
             "Candidate images": candidate_images
         })
     return dataset
-
-
-if __name__ == '__main__':
-    print(data_loader())

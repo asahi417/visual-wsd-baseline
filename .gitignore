@@ -4,3 +4,4 @@ dataset.zip
 vwsd/lib
 vwsd/text2image_latent_diffusion.py
 vwsd/text2image_glide.py
+vwsd/utils.py

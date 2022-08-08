@@ -33,7 +33,7 @@ images = []
 plt.figure(figsize=(16, 5))
 for n, (k, v) in enumerate(descriptions.items()):
     images.append(pj(image_dir, k))
-    texts.append("This is " + v)
+    texts.append(f"This is {v}")
     plt.subplot(2, 4, n + 1)
     plt.imshow(Image.open(pj(image_dir, k)).convert("RGB"))
     plt.title(f"{k}\n{v}")
