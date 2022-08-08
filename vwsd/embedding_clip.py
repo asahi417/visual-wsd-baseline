@@ -54,13 +54,15 @@ class CLIP:
                       images: List = None,
                       texts: List = None,
                       batch_size: int = None,
-                      return_similarity: bool = False):
+                      return_similarity: bool = False,
+                      return_tensor: bool = False):
         """ get embedding
 
         :param images: a list of images to get embedding
         :param texts: a list of texts to get embedding
         :param batch_size: batch size
         :param return_similarity: return similarity across images and texts
+        :param return_tensor: return tensor
         :return: (output_image_embedding, output_text_embedding, sim)
             - output_image_embedding: a tensor of image embedding (image size x output dim)
             - output_text_embedding: a tensor of text embedding (text size x output dim)
@@ -102,6 +104,8 @@ class CLIP:
                 output_image_embedding.unsqueeze(1).repeat((1, len(output_text_embedding), 1)),
                 output_text_embedding.unsqueeze(0).repeat((len(output_image_embedding), 1, 1))
             ) * 100  # image size x text size
-        return output_image_embedding, output_text_embedding, sim
+        if return_tensor:
+            return output_image_embedding, output_text_embedding, sim
+        return output_image_embedding.cpu().numpy(), output_text_embedding.cpu().numpy(), sim.cpu().numpy()
 
 

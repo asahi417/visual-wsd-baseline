@@ -47,7 +47,7 @@ plt.savefig(pj(export_dir, 'test_images.png'))
 ##############
 logging.info('** Text-Image similarity ** ')
 _, _, sim = model.get_embedding(images=images, texts=texts, return_similarity=True)
-similarity = sim.cpu().numpy() * 0.01
+similarity = sim * 0.01
 
 # plot
 plt.figure(figsize=(20, 14))
@@ -74,7 +74,7 @@ logging.info('** ZERO-SHOT ** ')
 # encode text representing each class
 cifar100_class = CIFAR100("cache", download=True).classes
 texts = [f"This is a photo of a {label}" for label in cifar100_class]
-_, _, sim = model.get_embedding(images=images, texts=texts, return_similarity=True)
+_, _, sim = model.get_embedding(images=images, texts=texts, return_similarity=True, return_tensor=True)
 prob = sim.softmax(dim=1)  # we can take the softmax to get the label probabilities
 top_probs, top_labels = prob.cpu().topk(5, dim=-1)
 
