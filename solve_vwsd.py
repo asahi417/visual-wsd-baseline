@@ -68,7 +68,6 @@ def main():
     parser.add_argument('-b', '--batch-size', help='batch size', default=None, type=int)
     # parser.add_argument('--return-ci', action='store_true', help='return confidence interval by bootstrap')
     opt = parser.parse_args()
-
     os.makedirs(opt.export_dir, exist_ok=True)
     data = data_loader(opt.data_dir)
     clip = CLIP(opt.model_clip)
@@ -78,35 +77,25 @@ def main():
         output = []
         for input_type in ['Target word', 'Full phrase', 'Definition']:
             if input_type != 'Definition':
-                for p in tqdm(opt.prompt):
-                    assert '<>' in p, f'prompt needs `<>` to specify placeholder: {p}'
-                    text = p.replace("<>", d[input_type])
-                    _, _, sim = clip.get_embedding(
-                        texts=[text], images=d['Candidate images'], return_similarity=True, batch_size=opt.batch_size
-                    )
-                    output.append((sim * 0.01, text, input_type.split(' ')[0]))
-                    ranked_candidate = [os.path.basename(i[1]) for i in
-                                        sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)]
-                    result.append({
-                        'data': n,
-                        'gold': os.path.basename(d['Gold image']),
-                        'candidate': ranked_candidate,
-                        'prompt': p,
-                        'input_type': input_type
-                    })
+                prompt = ['<>']
             else:
-                text = d[input_type]
+                prompt = opt.prompt
+            for p in tqdm(prompt):
+                assert '<>' in p, f'prompt needs `<>` to specify placeholder: {p}'
+                text = p.replace("<>", d[input_type])
                 _, _, sim = clip.get_embedding(
                     texts=[text], images=d['Candidate images'], return_similarity=True, batch_size=opt.batch_size
                 )
                 output.append((sim * 0.01, text, input_type.split(' ')[0]))
-                ranked_candidate = [os.path.basename(i[1]) for i in
-                                    sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)]
+                tmp = sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)
+                ranked_candidate = [os.path.basename(i[1]) for i in tmp]
+                relevance = [i[0] for i in tmp]
                 result.append({
                     'data': n,
                     'gold': os.path.basename(d['Gold image']),
                     'candidate': ranked_candidate,
-                    'prompt': '<>',
+                    'relevance': relevance,
+                    'prompt': p,
                     'input_type': input_type
                 })
         d['Candidate images'].pop(d['Candidate images'].index(d['Gold image']))
