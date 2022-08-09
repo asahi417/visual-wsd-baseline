@@ -35,6 +35,7 @@ setup(
         "numpy",
         "torchvision"
         "matplotlib",
+        "ranx"
         # "ftfy",
         # "regex",
         # "tqdm",

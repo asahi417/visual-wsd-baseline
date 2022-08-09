@@ -35,21 +35,25 @@ def cap_text(_string):
     return '\n'.join(sentence)
 
 
-def plot(similarity, texts, images, export_file):
+def plot(similarity, texts, images, gold_image_index, export_file):
     assert similarity.shape[0] == len(texts) and similarity.shape[1] == len(images), \
         f"{similarity.shape} != {(len(images), len(texts))}"
     plt.figure(figsize=(22, 14))
     plt.imshow(similarity, vmin=0.1, vmax=0.3)
     plt.yticks(range(len(texts)), [cap_text(i) for i in texts], fontsize=18)
-    plt.xticks([])
+    plt.xticks(range(len(images)), ['' if i != gold_image_index else 'True Image' for i in range(len(images))],
+               fontsize=18)
     for i, image in enumerate(images):
-        plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -1.6, -0.6), origin="lower")
+        # plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -1.6, -0.6), origin="lower")
+        plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -2.0, -1), origin="lower")
 
     for x in range(len(images)):
         for y in range(len(texts)):
             plt.text(x, y, f"{similarity[y, x]:.2f}", ha="center", va="center", size=12)
     for side in ["left", "top", "right", "bottom"]:
         plt.gca().spines[side].set_visible(False)
+    # plt.gca().xaxis.set_label_position('top')
+    plt.gca().xaxis.tick_top()
     plt.xlim([-0.5, len(images) - 0.5])
     plt.ylim([len(texts) + 0.5, -2])
     plt.tight_layout()
@@ -76,7 +80,7 @@ def main():
         logging.info(f'PROGRESS: {n + 1}/{len(data)}')
         output = []
         for input_type in ['Target word', 'Full phrase', 'Definition']:
-            if input_type != 'Definition':
+            if input_type == 'Definition':
                 prompt = ['<>']
             else:
                 prompt = opt.prompt
@@ -98,12 +102,13 @@ def main():
                     'prompt': p,
                     'input_type': input_type
                 })
-        d['Candidate images'].pop(d['Candidate images'].index(d['Gold image']))
+        gold_image_index = d['Candidate images'].index(d['Gold image'])
 
         plot(
             similarity=np.concatenate([i[0] for i in output], 1).T,
             texts=[f"`{i[1]}` [{i[2]}]" for i in output],
-            images=[d['Gold image']] + d['Candidate images'],
+            images=d['Candidate images'],
+            gold_image_index=gold_image_index,
             export_file=pj(opt.export_dir, f'similarity.{n}.png')
         )
 
