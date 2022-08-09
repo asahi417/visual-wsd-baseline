@@ -1,9 +1,4 @@
-""" Baseline of solving V-WSD with CLIP
-python solve_vwsd.py -m 'openai/clip-vit-base-patch16' -e 'result/clip_vit_base_patch16'
-python solve_vwsd.py -m 'openai/clip-vit-base-patch32' -e 'result/clip_vit_base_patch32'
-python solve_vwsd.py -m 'openai/clip-vit-large-patch14' -e 'result/clip_vit_large_patch14'
-python solve_vwsd.py -m 'openai/clip-vit-large-patch14-336' -e 'result/clip_vit_large_patch14_336'
-"""
+""" Baseline of solving V-WSD with CLIP """
 import argparse
 import json
 import logging
@@ -17,7 +12,7 @@ from tqdm import tqdm
 from vwsd import CLIP, data_loader
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-max_character = 40
+max_character = 40  # for plot
 
 
 def cap_text(_string):
@@ -44,7 +39,6 @@ def plot(similarity, texts, images, gold_image_index, export_file):
     plt.xticks(range(len(images)), ['' if i != gold_image_index else 'True Image' for i in range(len(images))],
                fontsize=18)
     for i, image in enumerate(images):
-        # plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -1.6, -0.6), origin="lower")
         plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -2.0, -1), origin="lower")
 
     for x in range(len(images)):
@@ -52,7 +46,6 @@ def plot(similarity, texts, images, gold_image_index, export_file):
             plt.text(x, y, f"{similarity[y, x]:.2f}", ha="center", va="center", size=12)
     for side in ["left", "top", "right", "bottom"]:
         plt.gca().spines[side].set_visible(False)
-    # plt.gca().xaxis.set_label_position('top')
     plt.gca().xaxis.tick_top()
     plt.xlim([-0.5, len(images) - 0.5])
     plt.ylim([len(texts) + 0.5, -2])
@@ -66,11 +59,10 @@ def main():
     parser.add_argument('-a', '--annotation-file', help='annotation file', default='dataset/annotations.csv', type=str)
     parser.add_argument('-m', '--model-clip', help='clip model', default='openai/clip-vit-base-patch32', type=str)
     parser.add_argument('-e', '--export-dir', help='export directly', default='result', type=str)
-    parser.add_argument('-p', '--prompt', help='prompt to be used in text embedding (specify the placeholder by {})',
+    parser.add_argument('-p', '--prompt', help='prompt to be used in text embedding (specify the placeholder by <>)',
                         type=str, nargs='+',
                         default=['This is <>.', 'Example of an image caption that explains <>.', '<>'])
     parser.add_argument('-b', '--batch-size', help='batch size', default=None, type=int)
-    # parser.add_argument('--return-ci', action='store_true', help='return confidence interval by bootstrap')
     opt = parser.parse_args()
     os.makedirs(opt.export_dir, exist_ok=True)
     data = data_loader(opt.data_dir)

@@ -33,24 +33,15 @@ setup(
         "transformers",
         "Pillow",
         "numpy",
-        "torchvision"
+        "torchvision",
         "matplotlib",
         "ranx"
-        # "ftfy",
-        # "regex",
-        # "tqdm",
-        # "omegaconf>=2.0.0",
-        # "pytorch-lightning>=1.0.8",
-        # "torch-fidelity",
-        # "einops",
-        # "glide_text2im @ git+https://github.com/openai/glide-text2im@main",
     ],
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
-            # 'harrogate-image-generation = harrogate_cl.image_generation:main',
-            # 'harrogate-image-sr = harrogate_cl.image_super_resolution:main',
-            # 'harrogate-canvas = harrogate_cl.canvas:main'
+            'vwsd-clip-baseline = vwsd.vwsd_cl.vwsd_clip_baseline:main',
+            'vwsd-ranking-metric = vwsd.vwsd_cl.vwsd_ranking_metric:main'
         ]
     }
 )
