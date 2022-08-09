@@ -9,6 +9,12 @@ pip install .
 ```
 
 ## Baseline with CLIP
+
+
+<p align="center">
+  <img src="result/clip_vit_large_patch14_336/similarity.0.png" width="400">
+</p>
+
 As a baseline to solve V-WSD, we compute the cosine similarity of each candidate image, and the target phrase (or description) 
 with [CLIP](https://arxiv.org/abs/2103.00020), and consider the image with the highest similarity as the prediction. This baseline can be 
 obtained by following `vwsd-clip-baseline` command.
@@ -75,34 +81,47 @@ vwsd-ranking-metric -r 'result/*/result.json' -m "map@5" "mrr@5" "ndcg@5" "map@1
 ```
 
 ## CLIP Baseline Ranking Metrics
+Here is the table to report the ranking metrics across different prompts, input types and CLIP variants.
 
-| map@5 | mrr@5 | ndcg@5 | map@10 | mrr@10 | ndcg@10 | prompt                                        | input_type  | CLIP                       |
-|-------|-------|--------|--------|--------|---------|-----------------------------------------------|-------------|----------------------------|
-|  76.7 |  76.7 |   81.3 |   77.4 |   77.4 |    82.9 | <>                                            | Definition  | clip_vit_base_patch16      |
-|  77.7 |  77.7 |   82.1 |   78.5 |   78.5 |    83.8 | <>                                            | Full phrase | clip_vit_base_patch16      |
-|  73.3 |  73.3 |   77.5 |   74.9 |   74.9 |    80.9 | Example of an image caption that explains <>. | Full phrase | clip_vit_base_patch16      |
-|  73.9 |  73.9 |   79.2 |   74.8 |   74.8 |    81.0 | This is <>.                                   | Full phrase | clip_vit_base_patch16      |
-|  67.3 |  67.3 |   72.9 |   68.4 |   68.4 |    76.0 | <>                                            | Target word | clip_vit_base_patch16      |
-|  58.3 |  58.3 |   63.8 |   61.2 |   61.2 |    70.4 | Example of an image caption that explains <>. | Target word | clip_vit_base_patch16      |
-|  66.3 |  66.3 |   72.1 |   67.6 |   67.6 |    75.3 | This is <>.                                   | Target word | clip_vit_base_patch16      |
-|  78.5 |  78.5 |   83.9 |   78.5 |   78.5 |    83.9 | <>                                            | Definition  | clip_vit_base_patch32      |
-|  75.4 |  75.4 |   80.4 |   76.3 |   76.3 |    82.2 | <>                                            | Full phrase | clip_vit_base_patch32      |
-|  71.0 |  71.0 |   76.9 |   71.6 |   71.6 |    78.4 | Example of an image caption that explains <>. | Full phrase | clip_vit_base_patch32      |
-|  67.1 |  67.1 |   75.4 |   67.1 |   67.1 |    75.4 | This is <>.                                   | Full phrase | clip_vit_base_patch32      |
-|  66.4 |  66.4 |   71.1 |   68.8 |   68.8 |    76.3 | <>                                            | Target word | clip_vit_base_patch32      |
-|  64.8 |  64.8 |   68.6 |   67.1 |   67.1 |    74.7 | Example of an image caption that explains <>. | Target word | clip_vit_base_patch32      |
-|  55.0 |  55.0 |   60.1 |   58.7 |   58.7 |    68.5 | This is <>.                                   | Target word | clip_vit_base_patch32      |
-|  78.3 |  78.3 |   82.6 |   78.8 |   78.8 |    84.1 | <>                                            | Definition  | clip_vit_large_patch14     |
-|  73.3 |  73.3 |   77.6 |   74.6 |   74.6 |    80.8 | <>                                            | Full phrase | clip_vit_large_patch14     |
-|  66.8 |  66.8 |   72.6 |   68.2 |   68.2 |    75.8 | Example of an image caption that explains <>. | Full phrase | clip_vit_large_patch14     |
-|  74.6 |  74.6 |   78.5 |   76.0 |   76.0 |    81.8 | This is <>.                                   | Full phrase | clip_vit_large_patch14     |
-|  66.2 |  66.2 |   69.5 |   68.9 |   68.9 |    76.0 | <>                                            | Target word | clip_vit_large_patch14     |
-|  52.3 |  52.3 |   57.9 |   55.4 |   55.4 |    65.8 | Example of an image caption that explains <>. | Target word | clip_vit_large_patch14     |
-|  57.4 |  57.4 |   63.0 |   60.1 |   60.1 |    69.5 | This is <>.                                   | Target word | clip_vit_large_patch14     |
-|  75.8 |  75.8 |   80.8 |   76.3 |   76.3 |    82.2 | <>                                            | Definition  | clip_vit_large_patch14_336 |
-|  74.3 |  74.3 |   79.6 |   75.0 |   75.0 |    81.2 | <>                                            | Full phrase | clip_vit_large_patch14_336 |
-|  67.7 |  67.7 |   74.4 |   68.5 |   68.5 |    76.1 | Example of an image caption that explains <>. | Full phrase | clip_vit_large_patch14_336 |
-|  77.1 |  77.1 |   80.3 |   78.5 |   78.5 |    83.6 | This is <>.                                   | Full phrase | clip_vit_large_patch14_336 |
-|  63.7 |  63.7 |   66.6 |   67.4 |   67.4 |    75.0 | <>                                            | Target word | clip_vit_large_patch14_336 |
-|  48.5 |  48.5 |   55.1 |   51.9 |   51.9 |    63.2 | Example of an image caption that explains <>. | Target word | clip_vit_large_patch14_336 |
-|  57.6 |  57.6 |   64.3 |   59.7 |   59.7 |    69.2 | This is <>.                                   | Target word | clip_vit_large_patch14_336 |
+- Target Word
+
+| hit_rate@1 | map@5 | mrr@5 | ndcg@5 | map@10 | mrr@10 | ndcg@10     | prompt                                        | CLIP model                 |
+|------------|-------|-------|--------|--------|--------|-------------|-----------------------------------------------|----------------------------|
+|       55.0 |  67.3 |  67.3 |   72.9 |   68.4 |   68.4 | 75.97941872 | <>                                            | clip_vit_base_patch16      |
+|       45.0 |  58.3 |  58.3 |   63.8 |   61.2 |   61.2 | 70.44477455 | Example of an image caption that explains <>. | clip_vit_base_patch16      |
+|       55.0 |  66.3 |  66.3 |   72.1 |   67.6 |   67.6 | 75.32020254 | This is <>.                                   | clip_vit_base_patch16      |
+|       55.0 |  66.4 |  66.4 |   71.1 |   68.8 |   68.8 | 76.28033167 | <>                                            | clip_vit_base_patch32      |
+|       55.0 |  64.8 |  64.8 |   68.6 |   67.1 |   67.1 | 74.73370973 | Example of an image caption that explains <>. | clip_vit_base_patch32      |
+|       40.0 |  55.0 |  55.0 |   60.1 |   58.7 |   58.7 |  68.4805646 | This is <>.                                   | clip_vit_base_patch32      |
+|       60.0 |  66.2 |  66.2 |   69.5 |   68.9 |   68.9 | 76.03572282 | <>                                            | clip_vit_large_patch14     |
+|       40.0 |  52.3 |  52.3 |   57.9 |   55.4 |   55.4 | 65.77403396 | Example of an image caption that explains <>. | clip_vit_large_patch14     |
+|       45.0 |  57.4 |  57.4 |   63.0 |   60.1 |   60.1 | 69.51603413 | This is <>.                                   | clip_vit_large_patch14     |
+|       55.0 |  63.7 |  63.7 |   66.6 |   67.4 |   67.4 | 75.01788428 | <>                                            | clip_vit_large_patch14_336 |
+|       35.0 |  48.5 |  48.5 |   55.1 |   51.9 |   51.9 |  63.2295398 | Example of an image caption that explains <>. | clip_vit_large_patch14_336 |
+|       45.0 |  57.6 |  57.6 |   64.3 |   59.7 |   59.7 | 69.21832502 | This is <>.                                   | clip_vit_large_patch14_336 |
+
+- Full Phrase
+
+| hit_rate@1 | map@5 | mrr@5 | ndcg@5 | map@10 | mrr@10 | ndcg@10     | prompt                                        | CLIP model                 |
+|------------|-------|-------|--------|--------|--------|-------------|-----------------------------------------------|----------------------------|
+|       65.0 |  77.7 |  77.7 |   82.1 |   78.5 |   78.5 | 83.83389504 | <>                                            | clip_vit_base_patch16      |
+|       65.0 |  73.3 |  73.3 |   77.5 |   74.9 |   74.9 | 80.90911695 | Example of an image caption that explains <>. | clip_vit_base_patch16      |
+|       60.0 |  73.9 |  73.9 |   79.2 |   74.8 |   74.8 | 80.98727783 | This is <>.                                   | clip_vit_base_patch16      |
+|       60.0 |  75.4 |  75.4 |   80.4 |   76.3 |   76.3 | 82.20766257 | <>                                            | clip_vit_base_patch32      |
+|       60.0 |  71.0 |  71.0 |   76.9 |   71.6 |   71.6 | 78.40082836 | Example of an image caption that explains <>. | clip_vit_base_patch32      |
+|       45.0 |  67.1 |  67.1 |   75.4 |   67.1 |   67.1 | 75.42662663 | This is <>.                                   | clip_vit_base_patch32      |
+|       60.0 |  73.3 |  73.3 |   77.6 |   74.6 |   74.6 | 80.79041172 | <>                                            | clip_vit_large_patch14     |
+|       55.0 |  66.8 |  66.8 |   72.6 |   68.2 |   68.2 | 75.83290385 | Example of an image caption that explains <>. | clip_vit_large_patch14     |
+|       65.0 |  74.6 |  74.6 |   78.5 |   76.0 |   76.0 | 81.79601366 | This is <>.                                   | clip_vit_large_patch14     |
+|       60.0 |  74.3 |  74.3 |   79.6 |   75.0 |   75.0 | 81.21952577 | <>                                            | clip_vit_large_patch14_336 |
+|       55.0 |  67.7 |  67.7 |   74.4 |   68.5 |   68.5 | 76.13812867 | Example of an image caption that explains <>. | clip_vit_large_patch14_336 |
+|       70.0 |  77.1 |  77.1 |   80.3 |   78.5 |   78.5 | 83.64136489 | This is <>.                                   | clip_vit_large_patch14_336 |
+
+- Definition
+
+| hit_rate@1 | map@5 | mrr@5 | ndcg@5 | map@10 | mrr@10 | ndcg@10     | prompt | CLIP model                 |
+|------------|-------|-------|--------|--------|--------|-------------|--------|----------------------------|
+|       65.0 |  76.7 |  76.7 |   81.3 |   77.4 |   77.4 | 82.93737855 | <>     | clip_vit_base_patch16      |
+|       65.0 |  78.5 |  78.5 |   83.9 |   78.5 |   78.5 | 83.85962469 | <>     | clip_vit_base_patch32      |
+|       65.0 |  78.3 |  78.3 |   82.6 |   78.8 |   78.8 |  84.0639192 | <>     | clip_vit_large_patch14     |
+|       60.0 |  75.8 |  75.8 |   80.8 |   76.3 |   76.3 | 82.21856797 | <>     | clip_vit_large_patch14_336 |

@@ -17,7 +17,8 @@ def main():
     parser.add_argument('-r', '--ranking-files', help='directly of model predictions', type=str, nargs='+',
                         default=[pj('result', "*", "result.json")])
     parser.add_argument('-m', '--metrics', help='metrics to report (see https://amenra.github.io/ranx/metrics/)',
-                        type=str, nargs='+', default=["map@5", "mrr@5", "ndcg@5", "map@10", "mrr@10", "ndcg@10"])
+                        type=str, nargs='+',
+                        default=["hit_rate@1", "map@5", "mrr@5", "ndcg@5", "map@10", "mrr@10", "ndcg@10"])
     parser.add_argument('-e', '--export', help='export file', default='rank_metrics.csv', type=str)
 
     # parser.add_argument('--return-ci', action='store_true', help='return confidence interval by bootstrap')
