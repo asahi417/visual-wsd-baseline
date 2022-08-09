@@ -89,7 +89,7 @@ def main():
                 output.append((sim * 0.01, text, input_type.split(' ')[0]))
                 tmp = sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)
                 ranked_candidate = [os.path.basename(i[1]) for i in tmp]
-                relevance = [i[0] for i in tmp]
+                relevance = [i[0].tolist()[0] * 0.01 for i in tmp]
                 result.append({
                     'data': n,
                     'gold': os.path.basename(d['Gold image']),
