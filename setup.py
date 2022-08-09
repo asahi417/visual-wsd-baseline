@@ -34,16 +34,10 @@ setup(
         "Pillow",
         "numpy",
         "torchvision"
-
+        "matplotlib",
         # "ftfy",
         # "regex",
         # "tqdm",
-
-
-        # "matplotlib",
-
-
-
         # "omegaconf>=2.0.0",
         # "pytorch-lightning>=1.0.8",
         # "torch-fidelity",

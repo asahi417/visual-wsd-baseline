@@ -9,7 +9,8 @@ import pandas as pd
 
 def wget(url, cache_dir: str = '.'):
     """ wget and uncompress """
-    os.makedirs(cache_dir, exist_ok=True)
+    if cache_dir != '':
+        os.makedirs(cache_dir, exist_ok=True)
     filename = os.path.basename(url)
     path = pj(cache_dir, filename)
     if not os.path.exists(path):
