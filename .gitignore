@@ -6,3 +6,4 @@ vwsd/text2image_latent_diffusion.py
 vwsd/text2image_glide.py
 vwsd/utils.py
 result
+clip_baseline_result.csv
