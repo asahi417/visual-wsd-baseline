@@ -47,7 +47,7 @@ plt.savefig(pj(export_dir, 'test_images.png'))
 ##############
 logging.info('** Text-Image similarity ** ')
 _, _, sim = model.get_embedding(images=images, texts=texts, return_similarity=True)
-similarity = sim * 0.01
+similarity = sim.T * 0.01
 
 # plot
 plt.figure(figsize=(20, 14))
