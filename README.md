@@ -12,7 +12,7 @@ pip install .
 
 
 <p align="center">
-  <img src="result/clip_vit_large_patch14_336/similarity.0.png" width="400">
+  <img src="result/clip_vit_large_patch14_336/similarity.0.png" width="700">
 </p>
 
 As a baseline to solve V-WSD, we compute the cosine similarity of each candidate image, and the target phrase (or description) 
