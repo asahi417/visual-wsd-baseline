@@ -33,16 +33,20 @@ optional arguments:
                         export directly
   -p PROMPT [PROMPT ...], --prompt PROMPT [PROMPT ...]
                         prompt to be used in text embedding (specify the placeholder by <>)
+  --input-type INPUT_TYPE [INPUT_TYPE ...]
+                        input text type
   -b BATCH_SIZE, --batch-size BATCH_SIZE
-                        batch size 
+                        batch size
+  --skip-default-prompt
+                        skip testing preset prompts 
 ```
 
 For example, baselines over CLIP model available on huggingface at the moment can be obtained by running commands below.
 ```shell
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' '<>' -m 'openai/clip-vit-base-patch16' -e 'result/clip_vit_base_patch16'
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' '<>' -m 'openai/clip-vit-base-patch16' -e 'result/clip_vit_base_patch16'
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' '<>' -m 'openai/clip-vit-large-patch14' -e 'result/clip_vit_large_patch14'
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' '<>' -m 'openai/clip-vit-large-patch14-336' -e 'result/clip_vit_large_patch14_336'  
+vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-base-patch16' -e 'result/clip_vit_base_patch16'
+vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-base-patch16' -e 'result/clip_vit_base_patch16'
+vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-large-patch14' -e 'result/clip_vit_large_patch14'
+vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-large-patch14-336' -e 'result/clip_vit_large_patch14_336'  
 ```
 
 ## Evaluation
