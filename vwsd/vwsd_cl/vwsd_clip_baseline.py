@@ -78,16 +78,16 @@ def main():
         prompt_list = []
         if not opt.skip_default_prompt:
             prompt_list += [
-                (d['Definition'], 'Definition'),
-                (d['Target word'], 'Target word'),
-                (d['Full phrase'], 'Full phrase'),
-                (f"{d['Target word']}:{d['Definition']}", 'Definition, Target word'),
-                (f"{d['Full phrase']}:{d['Definition']}", 'Definition, Full phrase')
+                (d['Definition'], 'Definition', "<>"),
+                (d['Target word'], 'Target word', "<>"),
+                (d['Full phrase'], 'Full phrase', "<>"),
+                (f"{d['Target word']}: {d['Definition']}", 'Definition, Target word', "<>: <>"),
+                (f"{d['Full phrase']}: {d['Definition']}", 'Definition, Full phrase', "<>: <>")
             ]
         for input_type in opt.input_type:
-            prompt_list += [(p.replace("<>", d[input_type]), input_type) for p in opt.prompt]
+            prompt_list += [(p.replace("<>", d[input_type]), input_type, p) for p in opt.prompt]
 
-        for text, input_type in tqdm(prompt_list):
+        for text, input_type, prompt_type in tqdm(prompt_list):
             _, _, sim = clip.get_embedding(
                 texts=[text], images=d['Candidate images'], return_similarity=True, batch_size=opt.batch_size
             )
@@ -100,7 +100,8 @@ def main():
                 'gold': os.path.basename(d['Gold image']),
                 'candidate': ranked_candidate,
                 'relevance': relevance,
-                'prompt': text,
+                'prompt': prompt_type,
+                'text': text,
                 'input_type': input_type
             })
         gold_image_index = d['Candidate images'].index(d['Gold image'])

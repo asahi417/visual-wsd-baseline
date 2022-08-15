@@ -81,7 +81,7 @@ Model prediction file should be a list of dictionary including
 
 For example, ranking metric of the CLIP baseline can be obtained by running commands below.
 ```shell
-vwsd-ranking-metric -r 'result/*/result.json' -m "map@5" "mrr@5" "ndcg@5" "map@10" "mrr@10" "ndcg@10" -e clip_baseline_result.csv
+vwsd-ranking-metric -r 'result/*/result.json' -m "hit_rate@1" "map@5" "mrr@5" "ndcg@5" "map@10" "mrr@10" "ndcg@10" -e clip_baseline_result.csv
 ```
 
 ## CLIP Baseline Ranking Metrics
