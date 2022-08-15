@@ -61,9 +61,13 @@ def main():
     parser.add_argument('-e', '--export-dir', help='export directly', default='result', type=str)
     parser.add_argument('-p', '--prompt', help='prompt to be used in text embedding (specify the placeholder by <>)',
                         type=str, nargs='+',
-                        default=['This is <>.', 'Example of an image caption that explains <>.', '<>'])
+                        default=['This is <>.', 'Example of an image caption that explains <>.'])
+    parser.add_argument('--input-type', help='input text type',
+                        type=str, nargs='+', default=['Target word', 'Full phrase'])
     parser.add_argument('-b', '--batch-size', help='batch size', default=None, type=int)
+    parser.add_argument('--skip-default-prompt', help='skip testing preset prompts', action='store_true')
     opt = parser.parse_args()
+    assert all("<>" in p for p in opt.prompt), "prompt need to contain `<>`"
     os.makedirs(opt.export_dir, exist_ok=True)
     data = data_loader(opt.data_dir)
     clip = CLIP(opt.model_clip)
@@ -71,34 +75,39 @@ def main():
     for n, d in enumerate(data):
         logging.info(f'PROGRESS: {n + 1}/{len(data)}')
         output = []
-        for input_type in ['Target word', 'Full phrase', 'Definition']:
-            if input_type == 'Definition':
-                prompt = ['<>']
-            else:
-                prompt = opt.prompt
-            for p in tqdm(prompt):
-                assert '<>' in p, f'prompt needs `<>` to specify placeholder: {p}'
-                text = p.replace("<>", d[input_type])
-                _, _, sim = clip.get_embedding(
-                    texts=[text], images=d['Candidate images'], return_similarity=True, batch_size=opt.batch_size
-                )
-                output.append((sim * 0.01, text, input_type.split(' ')[0]))
-                tmp = sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)
-                ranked_candidate = [os.path.basename(i[1]) for i in tmp]
-                relevance = [i[0].tolist()[0] * 0.01 for i in tmp]
-                result.append({
-                    'data': n,
-                    'gold': os.path.basename(d['Gold image']),
-                    'candidate': ranked_candidate,
-                    'relevance': relevance,
-                    'prompt': p,
-                    'input_type': input_type
-                })
+        prompt_list = []
+        if not opt.skip_default_prompt:
+            prompt_list += [
+                (d['Definition'], 'Definition'),
+                (d['Target word'], 'Target word'),
+                (d['Full phrase'], 'Full phrase'),
+                (f"{d['Target word']}:{d['Definition']}", 'Definition, Target word'),
+                (f"{d['Full phrase']}:{d['Definition']}", 'Definition, Full phrase')
+            ]
+        for input_type in opt.input_type:
+            prompt_list += [(p.replace("<>", d[input_type]), input_type) for p in opt.prompt]
+
+        for text, input_type in tqdm(prompt_list):
+            _, _, sim = clip.get_embedding(
+                texts=[text], images=d['Candidate images'], return_similarity=True, batch_size=opt.batch_size
+            )
+            output.append((sim * 0.01, text))
+            tmp = sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)
+            ranked_candidate = [os.path.basename(i[1]) for i in tmp]
+            relevance = [i[0].tolist()[0] * 0.01 for i in tmp]
+            result.append({
+                'data': n,
+                'gold': os.path.basename(d['Gold image']),
+                'candidate': ranked_candidate,
+                'relevance': relevance,
+                'prompt': text,
+                'input_type': input_type
+            })
         gold_image_index = d['Candidate images'].index(d['Gold image'])
 
         plot(
             similarity=np.concatenate([i[0] for i in output], 1).T,
-            texts=[f"`{i[1]}` [{i[2]}]" for i in output],
+            texts=[i[1] for i in output],
             images=d['Candidate images'],
             gold_image_index=gold_image_index,
             export_file=pj(opt.export_dir, f'similarity.{n}.png')
