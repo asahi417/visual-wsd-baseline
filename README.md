@@ -1,4 +1,4 @@
-# Visual Word Sense Disambiguation (V-WSD): Benchmark and Evaluation Script
+# Visual Word Sense Disambiguation (Visual-WSD): Benchmark and Evaluation Script
 This repository contains a baseline to solve Visual Word Sense Disambiguation (V-WSD) and the script to evaluate the results for the V-WSD.
 
 ## Get Started
