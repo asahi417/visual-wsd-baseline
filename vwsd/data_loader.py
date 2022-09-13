@@ -4,7 +4,6 @@ import tarfile
 import zipfile
 import gzip
 from os.path import join as pj
-import pandas as pd
 
 
 def wget(url, cache_dir: str = '.'):
@@ -37,29 +36,28 @@ def wget(url, cache_dir: str = '.'):
 
 
 def data_loader(path_to_dataset: str = 'dataset'):
+    path_to_dataset = pj(path_to_dataset, "semeval-2023-task-1-V-WSD-trial-v1")
     if not os.path.exists(path_to_dataset):
-        wget('https://github.com/asahi417/vwsd_experiment/releases/download/dataset/dataset.zip',
+        wget('https://github.com/asahi417/visual-wsd-baseline/releases/download/dataset-v2/semeval-2023-task-1-V-WSD-trial-v1.tar.gz',
              cache_dir=os.path.dirname(path_to_dataset))
+    path_to_image_dir = pj(path_to_dataset, 'all_images')
+    with open(pj(path_to_dataset, 'trial.data.txt')) as f:
+        data = [i.split('\t') for i in f.read().split('\n') if len(i) > 0]
 
-    path_to_image_dir = pj(path_to_dataset, 'images')
-    path_to_annotation_file = pj(path_to_dataset, 'annotations.csv')
-    assert os.path.exists(path_to_annotation_file), f'annotation not found at {path_to_annotation_file}'
-    assert os.path.isdir(path_to_image_dir), f'images not found at {path_to_image_dir}'
-    annotation = pd.read_csv(path_to_annotation_file)
-    candidate_columns = [i for i in annotation.columns if i.startswith('Candidate')]
-    annotation = list(annotation.T.to_dict().values())
+    with open(pj(path_to_dataset, 'trial.gold.txt')) as f:
+        true_image = [i for i in f.read().split('\n') if len(i) > 0]
+
+    assert len(data) == len(true_image), f"{len(data)} != {len(true_image)}"
+
     dataset = []
-    for single_ann in annotation:
-        gold_image = pj(path_to_image_dir, single_ann['Full phrase'], single_ann['Gold image'])
-        assert os.path.exists(gold_image), f"missing gold image {gold_image}"
-        candidate_images = [pj(path_to_image_dir, single_ann['Full phrase'], single_ann[c]) for c in candidate_columns]
-        assert all(os.path.exists(i) for i in candidate_images), \
-            f"missing image ({[i for i in candidate_images if not os.path.exists(i)]})"
-        assert gold_image in candidate_images, f"gold image {gold_image} not in the candidates {candidate_images}"
+    for d, i in zip(data, true_image):
+        candidate_images = [pj(path_to_image_dir, p) for p in d[2:]]
+        assert all(os.path.exists(p) for p in candidate_images), candidate_images
+        gold_image = pj(path_to_image_dir, i)
+        assert os.path.exists(gold_image), gold_image
         dataset.append({
-            "Target word": single_ann['Target word'],
-            "Full phrase": single_ann['Full phrase'],
-            "Definition": single_ann['Definition'],
+            "Target word": d[0],
+            "Full phrase": d[1],
             "Gold image": gold_image,
             "Candidate images": candidate_images
         })
