@@ -36,7 +36,7 @@ def wget(url, cache_dir: str = '.'):
 
 
 def data_loader(path_to_dataset: str = 'dataset'):
-    path_to_dataset = pj(path_to_dataset, "semeval-2023-task-1-V-WSD-trial-v1")
+    # path_to_dataset = pj(path_to_dataset, "semeval-2023-task-1-V-WSD-trial-v1")
     if not os.path.exists(path_to_dataset):
         wget('https://github.com/asahi417/visual-wsd-baseline/releases/download/dataset-v2/semeval-2023-task-1-V-WSD-trial-v1.tar.gz',
              cache_dir=os.path.dirname(path_to_dataset))
