@@ -38,8 +38,9 @@ class CLIP:
         self.config = self.model.config.to_dict()
         self.device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
         self.parallel = torch.cuda.device_count() > 1
-        if self.parallel:
-            self.model = torch.nn.DataParallel(self.model)
+        assert not self.parallel, "Processing on multiple GPUs is not supported"
+        # if self.parallel:
+        #     self.model = torch.nn.DataParallel(self.model)
         self.model.to(self.device)
         self.cos = torch.nn.CosineSimilarity(dim=2, eps=1e-6)
 
