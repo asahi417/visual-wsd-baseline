@@ -78,11 +78,8 @@ def main():
         prompt_list = []
         if not opt.skip_default_prompt:
             prompt_list += [
-                (d['Definition'], 'Definition', "<>"),
                 (d['Target word'], 'Target word', "<>"),
                 (d['Full phrase'], 'Full phrase', "<>"),
-                (f"{d['Target word']}: {d['Definition']}", 'Definition, Target word', "<>: <>"),
-                (f"{d['Full phrase']}: {d['Definition']}", 'Definition, Full phrase', "<>: <>")
             ]
         for input_type in opt.input_type:
             prompt_list += [(p.replace("<>", d[input_type]), input_type, p) for p in opt.prompt]
