@@ -1,6 +1,7 @@
 import argparse
 import logging
 import json
+import os
 from itertools import chain
 from glob import glob
 from os.path import join as pj
@@ -40,8 +41,12 @@ def main():
                 metric.update({'prompt': prompt, 'input_type': input_type, 'file': _file})
                 metrics.append(metric)
     df = pd.DataFrame(metrics)
-    logging.info(df.to_markdown())
     df.to_csv(opt.export, index=False)
+    for input_type, g in df.groupby("input_type"):
+        logging.info(input_type)
+        g.pop("input_type")
+        g['model'] = [os.path.basename(os.path.dirname(i)) for i in g.pop('file')]
+        logging.info("\n" + g.round(1).to_markdown(index=False))
 
 
 if __name__ == '__main__':
