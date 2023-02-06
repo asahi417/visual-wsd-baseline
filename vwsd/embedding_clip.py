@@ -22,9 +22,9 @@ def to_batch(inputs: Dict, batch_size: int = None):
 
 
 class CLIP:
-    """ Huggingface CLIP Warapper """
+    """ Huggingface CLIP Wrapper """
 
-    def __init__(self, model: str = 'openai/clip-vit-base-patch32'):
+    def __init__(self, model: str = 'openai/clip-vit-large-patch14-336'):
         """ Huggingface CLIP Warapper
 
         :param model: CLIP model on huggingface
@@ -51,62 +51,44 @@ class CLIP:
         logging.info(f"\tContext length: {self.config['text_config']['max_position_embeddings']}")
         logging.info(f"\tVocab size: {self.config['text_config']['vocab_size']}")
 
-    def get_embedding(self,
-                      images: List = None,
-                      texts: List = None,
-                      batch_size: int = None,
-                      return_similarity: bool = False,
-                      return_tensor: bool = False):
+    def get_similarity(self, images: List or str, texts: List or str, batch_size: int = None):
         """ get embedding
 
         :param images: a list of images to get embedding
         :param texts: a list of texts to get embedding
         :param batch_size: batch size
-        :param return_similarity: return similarity across images and texts
-        :param return_tensor: return tensor
         :return: (output_image_embedding, output_text_embedding, sim)
             - output_image_embedding: a tensor of image embedding (image size x output dim)
             - output_text_embedding: a tensor of text embedding (text size x output dim)
             - sim: a tensor of similarity (image size x text size)
         """
-        assert images is not None or texts is not None, "images or texts should be provided"
-        output_image_embedding = None
-        output_text_embedding = None
-        if images is not None:
-            logging.info(f'model inference on images: {len(images)}')
-            pil_images = [Image.open(i).convert("RGB") for i in images]
-            image_inputs = self.processor(images=pil_images, return_tensors="pt", padding=True)
-            batch_image_inputs = to_batch(image_inputs, batch_size=batch_size)
-            with torch.no_grad():
-                output_image_embedding = []
-                for i in batch_image_inputs:
-                    output_image_embedding.append(
-                        self.model.get_image_features(**{k: v.to(self.device) for k, v in i.items()})
-                    )
-                output_image_embedding = torch.cat(output_image_embedding)
-        if texts is not None:
-            logging.info(f'model inference on texts: {len(texts)}')
-            text_inputs = self.processor(text=texts, return_tensors="pt", padding=True)
-            batch_text_inputs = to_batch(text_inputs, batch_size=batch_size)
-            with torch.no_grad():
-                output_text_embedding = []
-                for i in batch_text_inputs:
-                    output_text_embedding.append(
-                        self.model.get_text_features(**{k: v.to(self.device) for k, v in i.items()})
-                    )
-            output_text_embedding = torch.cat(output_text_embedding)
-
-        sim = None
-        if return_similarity:
-            assert output_image_embedding is not None and output_text_embedding is not None, \
-                "images and texts should be provided to compute similarity"
-            logging.info('compute similarity')
-            sim = self.cos(
-                output_image_embedding.unsqueeze(1).repeat((1, len(output_text_embedding), 1)),
-                output_text_embedding.unsqueeze(0).repeat((len(output_image_embedding), 1, 1))
-            ) * 100  # image size x text size
-        if return_tensor:
-            return output_image_embedding, output_text_embedding, sim
-        return output_image_embedding.cpu().numpy(), output_text_embedding.cpu().numpy(), sim.cpu().numpy()
-
+        images = [images] if type(images) is str else images
+        texts = [texts] if type(texts) is str else texts
+        logging.info(f'model inference on images: {len(images)}')
+        pil_images = [Image.open(i).convert("RGB") for i in images]
+        image_inputs = self.processor(images=pil_images, return_tensors="pt", padding=True)
+        batch_image_inputs = to_batch(image_inputs, batch_size=batch_size)
+        with torch.no_grad():
+            output_image_embedding = []
+            for i in batch_image_inputs:
+                output_image_embedding.append(
+                    self.model.get_image_features(**{k: v.to(self.device) for k, v in i.items()})
+                )
+            output_image_embedding = torch.cat(output_image_embedding)
+        logging.info(f'model inference on texts: {len(texts)}')
+        text_inputs = self.processor(text=texts, return_tensors="pt", padding=True)
+        batch_text_inputs = to_batch(text_inputs, batch_size=batch_size)
+        with torch.no_grad():
+            output_text_embedding = []
+            for i in batch_text_inputs:
+                output_text_embedding.append(
+                    self.model.get_text_features(**{k: v.to(self.device) for k, v in i.items()})
+                )
+        output_text_embedding = torch.cat(output_text_embedding)
+        logging.info('compute similarity')
+        sim = self.cos(
+            output_image_embedding.unsqueeze(1).repeat((1, len(output_text_embedding), 1)),
+            output_text_embedding.unsqueeze(0).repeat((len(output_image_embedding), 1, 1))
+        ) * 100  # image size x text size
+        return sim.cpu().numpy().tolist()
 

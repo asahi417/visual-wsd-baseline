@@ -35,7 +35,8 @@ setup(
         "numpy",
         "torchvision",
         "matplotlib",
-        "ranx"
+        "ranx",
+        "sentence-transformers"
     ],
     python_requires='>=3.6',
     entry_points={

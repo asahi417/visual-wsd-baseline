@@ -3,7 +3,11 @@ import requests
 import tarfile
 import zipfile
 import gzip
+from itertools import chain
 from os.path import join as pj
+
+url_image = 'https://github.com/asahi417/visual-wsd-baseline/releases/download/dataset-test/test_images_resized.zip'
+url_label = "https://github.com/asahi417/visual-wsd-baseline/releases/download/dataset-test/test.data.v1.1.zip"
 
 
 def wget(url, cache_dir: str = '.'):
@@ -35,30 +39,26 @@ def wget(url, cache_dir: str = '.'):
         os.remove(path)
 
 
-def data_loader(path_to_dataset: str = 'dataset'):
-    # path_to_dataset = pj(path_to_dataset, "semeval-2023-task-1-V-WSD-trial-v1")
-    if not os.path.exists(path_to_dataset):
-        wget('https://github.com/asahi417/visual-wsd-baseline/releases/download/dataset-v2/semeval-2023-task-1-V-WSD-trial-v1.tar.gz',
-             cache_dir=os.path.dirname(path_to_dataset))
-    path_to_image_dir = pj(path_to_dataset, 'all_images')
-    with open(pj(path_to_dataset, 'trial.data.txt')) as f:
-        data = [i.split('\t') for i in f.read().split('\n') if len(i) > 0]
+def data_loader(cache_dir: str = 'dataset'):
+    path_image = pj(cache_dir, "image")
+    path_label = pj(cache_dir, "label")
+    if not os.path.exists(path_image):
+        wget(url_image, cache_dir=path_image)
+    if not os.path.exists(path_label):
+        wget(url_label, cache_dir=path_label)
+    dir_image = pj(cache_dir, "image", "test_images_resized")
 
-    with open(pj(path_to_dataset, 'trial.gold.txt')) as f:
-        true_image = [i for i in f.read().split('\n') if len(i) > 0]
+    def _load(_file):
+        with open(_file) as _f:
+            tmp = [x.split('\t') for x in _f.read().split('\n') if len(x) > 0]
+        return [{"target word": x[0], "target phrase": x[1], "candidate images": [pj(dir_image, y) for y in x[2:]]} for x in tmp]
 
-    assert len(data) == len(true_image), f"{len(data)} != {len(true_image)}"
+    data = {i.split('.')[0]: _load(pj(cache_dir, "label", i))
+            for i in ["en.test.data.v1.1.txt", "fa.test.data.txt", "it.test.data.v1.1.txt"]}
+    # validate image path
+    image_paths = list(chain(*[list(chain(*[i['candidate images'] for i in d])) for d in data.values()]))
+    if not all([os.path.exists(i) for i in image_paths]):
+        raise ValueError(f"Image path is invalid. Please check the path: "
+                         f"{[i for i in image_paths if not os.path.exists(i)]}")
 
-    dataset = []
-    for d, i in zip(data, true_image):
-        candidate_images = [pj(path_to_image_dir, p) for p in d[2:]]
-        assert all(os.path.exists(p) for p in candidate_images), candidate_images
-        gold_image = pj(path_to_image_dir, i)
-        assert os.path.exists(gold_image), gold_image
-        dataset.append({
-            "Target word": d[0],
-            "Full phrase": d[1],
-            "Gold image": gold_image,
-            "Candidate images": candidate_images
-        })
-    return dataset
+    return data

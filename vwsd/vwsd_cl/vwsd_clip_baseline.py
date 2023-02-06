@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-from vwsd import CLIP, data_loader
+from vwsd import CLIP, MultilingualCLIP, data_loader
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 max_character = 40  # for plot
@@ -30,14 +30,15 @@ def cap_text(_string):
     return '\n'.join(sentence)
 
 
-def plot(similarity, texts, images, gold_image_index, export_file):
+def plot(similarity, texts, images, export_file, gold_image_index=None):
     assert similarity.shape[0] == len(texts) and similarity.shape[1] == len(images), \
         f"{similarity.shape} != {(len(images), len(texts))}"
     plt.figure(figsize=(22, 14))
     plt.imshow(similarity, vmin=0.1, vmax=0.3)
     plt.yticks(range(len(texts)), [cap_text(i) for i in texts], fontsize=18)
-    plt.xticks(range(len(images)), ['' if i != gold_image_index else 'True Image' for i in range(len(images))],
-               fontsize=18)
+    if gold_image_index is not None:
+        plt.xticks(range(len(images)), ['' if i != gold_image_index else 'True Image' for i in range(len(images))],
+                   fontsize=18)
     for i, image in enumerate(images):
         plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -2.0, -1), origin="lower")
 
@@ -56,62 +57,63 @@ def plot(similarity, texts, images, gold_image_index, export_file):
 def main():
     parser = argparse.ArgumentParser(description="Solve V-WSD")
     parser.add_argument('-d', '--data-dir', help='directly of images', default='dataset', type=str)
-    parser.add_argument('-a', '--annotation-file', help='annotation file', default='dataset/annotations.csv', type=str)
-    parser.add_argument('-m', '--model-clip', help='clip model', default='openai/clip-vit-base-patch32', type=str)
-    parser.add_argument('-e', '--export-dir', help='export directly', default='result', type=str)
+    parser.add_argument('-l', '--language', help='language', default='en', type=str)
+    parser.add_argument('-m', '--model-clip', help='clip model', default=None, type=str)
+    parser.add_argument('-o', '--output-dir', help='output directly', default=None, type=str)
     parser.add_argument('-p', '--prompt', help='prompt to be used in text embedding (specify the placeholder by <>)',
                         type=str, nargs='+',
-                        default=['This is <>.', 'Example of an image caption that explains <>.'])
+                        default=['<>' 'This is <>.', 'Example of an image caption that explains <>.'])
     parser.add_argument('--input-type', help='input text type',
-                        type=str, nargs='+', default=['Target word', 'Full phrase'])
+                        type=str, nargs='+', default=['target word', 'target phrase'])
     parser.add_argument('-b', '--batch-size', help='batch size', default=None, type=int)
-    parser.add_argument('--skip-default-prompt', help='skip testing preset prompts', action='store_true')
     opt = parser.parse_args()
+
+    # sanity check
     assert all("<>" in p for p in opt.prompt), "prompt need to contain `<>`"
-    os.makedirs(opt.export_dir, exist_ok=True)
-    data = data_loader(opt.data_dir)
-    clip = CLIP(opt.model_clip)
+    os.makedirs(opt.output_dir, exist_ok=True)
+
+    # load dataset
+    data = data_loader(opt.data_dir)[opt.language]
+
+    # load model
+    if opt.language == 'en':
+        clip = CLIP(opt.model_clip if opt.model_clip is not None else 'openai/clip-vit-large-patch14-336')
+    else:
+        clip = MultilingualCLIP(
+            opt.model_clip if opt.model_clip is not None else 'sentence-transformers/clip-ViT-B-32-multilingual-v1')
+
+    # run inference
     result = []
-    for n, d in enumerate(data):
-        logging.info(f'PROGRESS: {n + 1}/{len(data)}')
+    for n, d in tqdm(enumerate(data)):
         output = []
         prompt_list = []
-        if not opt.skip_default_prompt:
-            prompt_list += [
-                (d['Target word'], 'Target word', "<>"),
-                (d['Full phrase'], 'Full phrase', "<>"),
-            ]
         for input_type in opt.input_type:
             prompt_list += [(p.replace("<>", d[input_type]), input_type, p) for p in opt.prompt]
 
-        for text, input_type, prompt_type in tqdm(prompt_list):
-            _, _, sim = clip.get_embedding(
-                texts=[text], images=d['Candidate images'], return_similarity=True, batch_size=opt.batch_size
-            )
-            output.append((sim * 0.01, text))
-            tmp = sorted(zip(sim, d['Candidate images']), key=lambda x: x[0], reverse=True)
+        for text, input_type, prompt_type in prompt_list:
+            sim = clip.get_similarity(texts=text, images=d['candidate images'], batch_size=opt.batch_size)
+            output.append((sim, text))
+            tmp = sorted(zip(sim, d['candidate images']), key=lambda x: x[0], reverse=True)
             ranked_candidate = [os.path.basename(i[1]) for i in tmp]
             relevance = [i[0].tolist()[0] * 0.01 for i in tmp]
             result.append({
+                'language': opt.language,
                 'data': n,
-                'gold': os.path.basename(d['Gold image']),
                 'candidate': ranked_candidate,
                 'relevance': relevance,
-                'prompt': prompt_type,
                 'text': text,
-                'input_type': input_type
+                'input_type': input_type,
+                'prompt': prompt_type
             })
-        gold_image_index = d['Candidate images'].index(d['Gold image'])
 
-        plot(
-            similarity=np.concatenate([i[0] for i in output], 1).T,
-            texts=[i[1] for i in output],
-            images=d['Candidate images'],
-            gold_image_index=gold_image_index,
-            export_file=pj(opt.export_dir, f'similarity.{n}.png')
-        )
+        # plot(
+        #     similarity=np.concatenate([i[0] for i in output], 1).T,
+        #     texts=[i[1] for i in output],
+        #     images=d['Candidate images'],
+        #     export_file=pj(opt.output_dir, f'similarity.{n}.png')
+        # )
 
-    with open(pj(opt.export_dir, 'result.json'), 'w') as f:
+    with open(pj(opt.output_dir, 'result.json'), 'w') as f:
         f.write('\n'.join([json.dumps(i) for i in result]))
 
 
