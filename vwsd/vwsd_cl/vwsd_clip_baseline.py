@@ -52,6 +52,8 @@ def main():
 
         for text, input_type, prompt_type in prompt_list:
             sim = clip.get_similarity(texts=text, images=d['candidate images'], batch_size=opt.batch_size)
+            print(sim)
+            input()
             output.append((sim, text))
             tmp = sorted(zip(sim, d['candidate images']), key=lambda x: x[0], reverse=True)
             ranked_candidate = [os.path.basename(i[1]) for i in tmp]

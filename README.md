@@ -11,6 +11,8 @@ pip install .
 ## Run
 ```shell
 vwsd-clip-baseline -l en
+vwsd-clip-baseline -l fa
+vwsd-clip-baseline -l it
 ```
 
 ## Baseline with CLIP
