@@ -76,6 +76,7 @@ def main():
         os.makedirs(path, exist_ok=True)
         with open(pj(path, f'prediction.{opt.language}.txt'), 'w') as f:
             f.write('\n'.join(['\t'.join(x) for x in g.sort_values(by=['data'])['candidate'].to_list()]))
+        g.to_csv(pj(path, f'full_result.{opt.language}.txt'), index=False)
 
 
 if __name__ == '__main__':
