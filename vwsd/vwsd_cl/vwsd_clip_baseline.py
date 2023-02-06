@@ -45,35 +45,30 @@ def main():
     result = []
     for n, d in enumerate(data):
         logging.info(f"{n+1}/{len(data)}: {d['target phrase']}")
-        output = []
+        # output = []
         prompt_list = []
         for input_type in opt.input_type:
             prompt_list += [(p.replace("<>", d[input_type]), input_type, p) for p in opt.prompt]
 
-        for text, input_type, prompt_type in prompt_list:
-            sim = clip.get_similarity(texts=text, images=d['candidate images'], batch_size=opt.batch_size)
-            print(sim)
-            input()
-            output.append((sim, text))
-            tmp = sorted(zip(sim, d['candidate images']), key=lambda x: x[0], reverse=True)
-            ranked_candidate = [os.path.basename(i[1]) for i in tmp]
-            relevance = [i[0][0] for i in tmp]
+        sim = clip.get_similarity(texts=[p[0] for p in prompt_list], images=d['candidate images'], batch_size=opt.batch_size)
+        for (text, input_type, prompt_type), s in zip(prompt_list, sim):
+            tmp = sorted(zip(s, d['candidate images']), key=lambda x: x[0], reverse=True)
             result.append({
                 'language': opt.language,
                 'data': n,
-                'candidate': ranked_candidate,
-                'relevance': relevance,
+                'candidate': [os.path.basename(i[1]) for i in tmp],
+                'relevance': sorted(s, reverse=True),
                 'text': text,
                 'input_type': input_type,
                 'prompt': prompt_type
             })
 
-        plot(
-            similarity=np.concatenate([i[0] for i in output], 1).T,
-            texts=[i[1] for i in output],
-            images=d['candidate images'],
-            export_file=pj(opt.output_dir, "visualization", f'similarity.{n}.png')
-        )
+        # plot(
+        #     similarity=np.concatenate([i[0] for i in output], 1).T,
+        #     texts=[i[1] for i in output],
+        #     images=d['candidate images'],
+        #     export_file=pj(opt.output_dir, "visualization", f'similarity.{n}.png')
+        # )
 
     with open(pj(opt.output_dir, 'result.json'), 'w') as f:
         f.write('\n'.join([json.dumps(i) for i in result]))

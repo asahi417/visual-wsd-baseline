@@ -74,7 +74,7 @@ class MultilingualCLIP:
                 output_text_embedding += self.text_model.encode(i).tolist()
 
         logging.info('compute similarity')
-        # image size x text size
+        # text size x image size
         sim = [[cosine_similarity(i, t) for i in output_image_embedding] for t in output_text_embedding]
         return sim
 
