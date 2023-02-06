@@ -12,7 +12,7 @@ pip install .
 
 
 <p align="center">
-  <img src="result/visualization/en/similarity.0.png" width="700">
+  <img src="result/visualization/en/similarity.0.png">
 </p>
 
 As a baseline to solve V-WSD, we use [CLIP](https://arxiv.org/abs/2103.00020) to compute the text and image embeddings, 
