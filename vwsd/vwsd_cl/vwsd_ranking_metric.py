@@ -3,12 +3,31 @@ import logging
 import os
 import json
 from os.path import join as pj
-
+from statistics import mean
 import pandas as pd
 from ranx import Qrels, Run, evaluate
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+
+
+def get_metric(prediction, gold_ranking):
+    """ Get MRR and HIT Rate
+
+    >>> p = ['a', 'b', 'c']
+    >>> r = [['a', 'b', 'c'], ['a', 'b', 'c'], ['a', 'b', 'c', 'd']]
+    >>> mrr_score, hit_score = get_metric(p, r)
+    >>> mrr_score
+    0.611
+    >>> hit_score
+    0.333
+    """
+    assert all(len(set(p)) == len(p) for p in prediction), prediction
+    assert all(r in p for p, r in zip(prediction, gold_ranking)), list(zip(prediction, gold_ranking))
+    mrr = mean(1/(p.index(r) + 1) for p, r in zip(prediction, gold_ranking))
+    hit = mean(p.index(r) == 0 for p, r in zip(prediction, gold_ranking))
+    return mrr, hit
+
 
 
 def main():
@@ -37,10 +56,11 @@ def main():
     for i in ['en', 'fa', 'it']:
         qrels_dict = {str(n): {r: 1} for n, r in enumerate(reference[i])}
         run_dict = {str(n): {c: 1/(1 + r) for r, c in enumerate(x)} for n, x in enumerate(prediction[i])}
-        metric = evaluate(Qrels(qrels_dict), Run(run_dict), metrics=opt.metrics)
-        metric = {f"{k}/{i}": 100 * v for k, v in metric.items()}
+        m, h = get_metric(prediction[i], reference[i])
+        metric = {f'mrr_official/{i}': m, f'hit_official/{i}': h}
+        metric.update({f"{k}/{i}": v for k, v in evaluate(Qrels(qrels_dict), Run(run_dict), metrics=opt.metrics).items()})
         metric_dict.update(metric)
-    for m in opt.metrics:
+    for m in ['mrr_official', 'hit_official'] + opt.metrics:
         metric_dict[f"{m}/avg"] = sum([metric_dict[f"{m}/{i}"] for i in ['en', 'fa', 'it']]) / 3
 
     if os.path.exists(opt.output_file):
@@ -52,12 +72,6 @@ def main():
     with open(opt.output_file, 'w') as f:
         f.write("\n".join([json.dumps(i) for i in metric_all]))
     print(pd.DataFrame(metric_all).to_markdown(index=False))
-
-    # for input_type, g in df.groupby("input_type"):
-    #     logging.info(input_type)
-    #     g.pop("input_type")
-    #     g['model'] = [os.path.basename(os.path.dirname(i)) for i in g.pop('file')]
-    #     logging.info("\n" + g.round(1).to_markdown(index=False))
 
 
 if __name__ == '__main__':
