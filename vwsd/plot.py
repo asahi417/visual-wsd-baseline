@@ -21,10 +21,7 @@ def cap_text(_string, max_character: int = 40):
 
 
 def plot(similarity, texts, images, export_file, gold_image_index=None):
-    print(similarity)
-    print(np.concatenate(similarity))
-    input()
-    similarity = np.concatenate(similarity, 1).T
+    similarity = np.array(similarity, 1)
     assert similarity.shape[0] == len(texts) and similarity.shape[1] == len(images), \
         f"{similarity.shape} != {(len(images), len(texts))}"
     plt.figure(figsize=(22, 14))
