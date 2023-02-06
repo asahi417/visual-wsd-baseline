@@ -64,7 +64,7 @@ class CLIP:
         """
         images = [images] if type(images) is str else images
         texts = [texts] if type(texts) is str else texts
-        logging.info(f'model inference on images: {len(images)}')
+        logging.debug(f'model inference on images: {len(images)}')
         pil_images = [Image.open(i).convert("RGB") for i in images]
         image_inputs = self.processor(images=pil_images, return_tensors="pt", padding=True)
         batch_image_inputs = to_batch(image_inputs, batch_size=batch_size)
@@ -75,7 +75,7 @@ class CLIP:
                     self.model.get_image_features(**{k: v.to(self.device) for k, v in i.items()})
                 )
             output_image_embedding = torch.cat(output_image_embedding)
-        logging.info(f'model inference on texts: {len(texts)}')
+        logging.debug(f'model inference on texts: {len(texts)}')
         text_inputs = self.processor(text=texts, return_tensors="pt", padding=True)
         batch_text_inputs = to_batch(text_inputs, batch_size=batch_size)
         with torch.no_grad():
@@ -85,7 +85,7 @@ class CLIP:
                     self.model.get_text_features(**{k: v.to(self.device) for k, v in i.items()})
                 )
         output_text_embedding = torch.cat(output_text_embedding)
-        logging.info('compute similarity')
+        logging.debug('compute similarity')
         sim = self.cos(
             output_image_embedding.unsqueeze(1).repeat((1, len(output_text_embedding), 1)),
             output_text_embedding.unsqueeze(0).repeat((len(output_image_embedding), 1, 1))

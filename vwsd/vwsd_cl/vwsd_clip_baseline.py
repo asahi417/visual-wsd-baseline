@@ -6,52 +6,9 @@ import os
 from os.path import join as pj
 
 import numpy as np
-from PIL import Image
-from matplotlib import pyplot as plt
-from tqdm import tqdm
-from vwsd import CLIP, MultilingualCLIP, data_loader
+from vwsd import CLIP, MultilingualCLIP, data_loader, plot
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-max_character = 40  # for plot
-
-
-def cap_text(_string):
-    if len(_string) < max_character:
-        return _string
-    sentence = []
-    new_string = []
-    for word in _string.split(' '):
-        new_string.append(word)
-        if len(' '.join(new_string)) > max_character:
-            sentence.append(' '.join(new_string))
-            new_string = []
-    if len(new_string) != 0:
-        sentence.append(' '.join(new_string))
-    return '\n'.join(sentence)
-
-
-def plot(similarity, texts, images, export_file, gold_image_index=None):
-    assert similarity.shape[0] == len(texts) and similarity.shape[1] == len(images), \
-        f"{similarity.shape} != {(len(images), len(texts))}"
-    plt.figure(figsize=(22, 14))
-    plt.imshow(similarity, vmin=0.1, vmax=0.3)
-    plt.yticks(range(len(texts)), [cap_text(i) for i in texts], fontsize=18)
-    if gold_image_index is not None:
-        plt.xticks(range(len(images)), ['' if i != gold_image_index else 'True Image' for i in range(len(images))],
-                   fontsize=18)
-    for i, image in enumerate(images):
-        plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -2.0, -1), origin="lower")
-
-    for x in range(len(images)):
-        for y in range(len(texts)):
-            plt.text(x, y, f"{similarity[y, x]:.2f}", ha="center", va="center", size=12)
-    for side in ["left", "top", "right", "bottom"]:
-        plt.gca().spines[side].set_visible(False)
-    plt.gca().xaxis.tick_top()
-    plt.xlim([-0.5, len(images) - 0.5])
-    plt.ylim([len(texts) + 0.5, -2])
-    plt.tight_layout()
-    plt.savefig(export_file, bbox_inches='tight')
 
 
 def main():
@@ -71,7 +28,7 @@ def main():
     # sanity check
     assert all("<>" in p for p in opt.prompt), "prompt need to contain `<>`"
     if opt.output_dir is None:
-        opt.output_dir = f"result/{opt.language}"
+        opt.output_dir = pj("result", opt.language)
     os.makedirs(opt.output_dir, exist_ok=True)
 
     # load dataset
@@ -86,7 +43,8 @@ def main():
 
     # run inference
     result = []
-    for n, d in tqdm(enumerate(data)):
+    for n, d in enumerate(data):
+        logging.info(f"{n+1}/{len(data)}: {d['target phrase']}")
         output = []
         prompt_list = []
         for input_type in opt.input_type:
@@ -108,12 +66,12 @@ def main():
                 'prompt': prompt_type
             })
 
-        # plot(
-        #     similarity=np.concatenate([i[0] for i in output], 1).T,
-        #     texts=[i[1] for i in output],
-        #     images=d['Candidate images'],
-        #     export_file=pj(opt.output_dir, f'similarity.{n}.png')
-        # )
+        plot(
+            similarity=np.concatenate([i[0] for i in output], 1).T,
+            texts=[i[1] for i in output],
+            images=d['candidate images'],
+            export_file=pj(opt.output_dir, "visualization", f'similarity.{n}.png')
+        )
 
     with open(pj(opt.output_dir, 'result.json'), 'w') as f:
         f.write('\n'.join([json.dumps(i) for i in result]))
