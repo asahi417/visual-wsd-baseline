@@ -19,7 +19,7 @@ def main():
     parser.add_argument('-o', '--output-dir', help='output directly', default="result", type=str)
     parser.add_argument('-p', '--prompt', help='prompt to be used in text embedding (specify the placeholder by <>)',
                         type=str, nargs='+',
-                        default=['<>' 'This is <>.', 'Example of an image caption that explains <>.'])
+                        default=['<>', 'This is <>.', 'Example of an image caption that explains <>.'])
     parser.add_argument('--input-type', help='input text type',
                         type=str, nargs='+', default=['target word', 'target phrase'])
     parser.add_argument('-b', '--batch-size', help='batch size', default=None, type=int)
@@ -72,7 +72,7 @@ def main():
     #     f.write('\n'.join([json.dumps(i) for i in result]))
     df = pd.DataFrame(result)
     for (prompt, input_type), g in df.groupby(['prompt', 'input_type']):
-        path = pj(opt.output_dir, f'{prompt}.{input_type}'.replace(" ", "_"))
+        path = pj(opt.output_dir, f'{prompt.replace("<>", "mask")}.{input_type}'.replace(" ", "_"))
         os.makedirs(path, exist_ok=True)
         with open(pj(path, f'prediction.{opt.language}.txt'), 'w') as f:
             f.write('\n'.join(['\t'.join(x) for x in g.sort_values(by=['data'])['candidate'].to_list()]))
