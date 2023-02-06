@@ -48,10 +48,7 @@ def main():
         for input_type in opt.input_type:
             prompt_list += [(p.replace("<>", d[input_type]), input_type, p) for p in opt.prompt]
 
-        print(len(d['candidate images']))
         sim = clip.get_similarity(texts=[p[0] for p in prompt_list], images=d['candidate images'], batch_size=opt.batch_size)
-        print(len(sim[0]))
-        input()
         if opt.plot:
             plot(
                 similarity=sim,

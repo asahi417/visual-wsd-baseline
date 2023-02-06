@@ -8,13 +8,6 @@ cd vwsd_experiment
 pip install .
 ```
 
-## Run
-```shell
-vwsd-clip-baseline -l en
-vwsd-clip-baseline -l fa
-vwsd-clip-baseline -l it
-```
-
 ## Baseline with CLIP
 
 
@@ -22,38 +15,13 @@ vwsd-clip-baseline -l it
   <img src="result/clip_vit_large_patch14_336/similarity.0.png" width="700">
 </p>
 
-As a baseline to solve V-WSD, we compute the cosine similarity of each candidate image, and the target phrase (or description) 
-with [CLIP](https://arxiv.org/abs/2103.00020), and consider the image with the highest similarity as the prediction. This baseline can be 
-obtained by following `vwsd-clip-baseline` command.
+As a baseline to solve V-WSD, we use [CLIP](https://arxiv.org/abs/2103.00020) to compute the text and image embeddings, 
+and rank the candidate images based on the cosine similarity between the text and image embeddings.
+Following command will run the baseline for each language. 
 ```shell
-vwsd-clip-baseline [-h] [-d DATA_DIR] [-a ANNOTATION_FILE] [-m MODEL_CLIP] [-e EXPORT_DIR] [-p PROMPT [PROMPT ...]] [-b BATCH_SIZE]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -d DATA_DIR, --data-dir DATA_DIR
-                        directly of images
-  -a ANNOTATION_FILE, --annotation-file ANNOTATION_FILE
-                        annotation file
-  -m MODEL_CLIP, --model-clip MODEL_CLIP
-                        clip model
-  -e EXPORT_DIR, --export-dir EXPORT_DIR
-                        export directly
-  -p PROMPT [PROMPT ...], --prompt PROMPT [PROMPT ...]
-                        prompt to be used in text embedding (specify the placeholder by <>)
-  --input-type INPUT_TYPE [INPUT_TYPE ...]
-                        input text type
-  -b BATCH_SIZE, --batch-size BATCH_SIZE
-                        batch size
-  --skip-default-prompt
-                        skip testing preset prompts 
-```
-
-For example, baselines over CLIP model available on huggingface at the moment can be obtained by running commands below.
-```shell
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-base-patch16' -e 'result/clip_vit_base_patch16'
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-base-patch32' -e 'result/clip_vit_base_patch32'
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-large-patch14' -e 'result/clip_vit_large_patch14'
-vwsd-clip-baseline --prompt 'This is <>.' 'Example of an image caption that explains <>.' -m 'openai/clip-vit-large-patch14-336' -e 'result/clip_vit_large_patch14_336'  
+vwsd-clip-baseline -l en --plot
+vwsd-clip-baseline -l fa --plot
+vwsd-clip-baseline -l it --plot
 ```
 
 ## Evaluation
