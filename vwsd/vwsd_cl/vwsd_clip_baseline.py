@@ -5,7 +5,7 @@ import logging
 import os
 from os.path import join as pj
 
-import numpy as np
+import pandas as pd
 from vwsd import CLIP, MultilingualCLIP, data_loader, plot
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
@@ -16,7 +16,7 @@ def main():
     parser.add_argument('-d', '--data-dir', help='directly of images', default='dataset', type=str)
     parser.add_argument('-l', '--language', help='language', default='en', type=str)
     parser.add_argument('-m', '--model-clip', help='clip model', default=None, type=str)
-    parser.add_argument('-o', '--output-dir', help='output directly', default=None, type=str)
+    parser.add_argument('-o', '--output-dir', help='output directly', default="result", type=str)
     parser.add_argument('-p', '--prompt', help='prompt to be used in text embedding (specify the placeholder by <>)',
                         type=str, nargs='+',
                         default=['<>' 'This is <>.', 'Example of an image caption that explains <>.'])
@@ -27,9 +27,7 @@ def main():
 
     # sanity check
     assert all("<>" in p for p in opt.prompt), "prompt need to contain `<>`"
-    if opt.output_dir is None:
-        opt.output_dir = pj("result", opt.language)
-    os.makedirs(opt.output_dir, exist_ok=True)
+    # os.makedirs(opt.output_dir, exist_ok=True)
 
     # load dataset
     data = data_loader(opt.data_dir)[opt.language]
@@ -70,8 +68,14 @@ def main():
         #     export_file=pj(opt.output_dir, "visualization", f'similarity.{n}.png')
         # )
 
-    with open(pj(opt.output_dir, 'result.json'), 'w') as f:
-        f.write('\n'.join([json.dumps(i) for i in result]))
+    # with open(pj(opt.output_dir, 'result.json'), 'w') as f:
+    #     f.write('\n'.join([json.dumps(i) for i in result]))
+    df = pd.DataFrame(result)
+    for (prompt, input_type), g in df.groupby(['prompt', 'input_type']):
+        path = pj(opt.output_dir, f'{prompt}.{input_type}'.replace(" ", "_"))
+        os.makedirs(path, exist_ok=True)
+        with open(pj(path, f'prediction.{opt.language}.txt'), 'w') as f:
+            f.write('\n'.join(['\t'.join(x) for x in g.sort_values(by=['data'])['candidate'].to_list()]))
 
 
 if __name__ == '__main__':

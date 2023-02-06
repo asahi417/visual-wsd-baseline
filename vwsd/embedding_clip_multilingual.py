@@ -59,21 +59,21 @@ class MultilingualCLIP:
         images = [images] if type(images) is str else images
         texts = [texts] if type(texts) is str else texts
 
-        logging.info(f'model inference on images: {len(images)}')
+        logging.debug(f'model inference on images: {len(images)}')
         batch = to_batch([Image.open(i).convert("RGB") for i in images], batch_size=batch_size)
         with torch.no_grad():
             output_image_embedding = []
             for i in batch:
                 output_image_embedding += self.img_model.encode(i).tolist()
 
-        logging.info(f'model inference on texts: {len(texts)}')
+        logging.debug(f'model inference on texts: {len(texts)}')
         batch = to_batch(texts, batch_size=batch_size)
         with torch.no_grad():
             output_text_embedding = []
             for i in batch:
                 output_text_embedding += self.text_model.encode(i).tolist()
 
-        logging.info('compute similarity')
+        logging.debug('compute similarity')
         # text size x image size
         sim = [[cosine_similarity(i, t) for i in output_image_embedding] for t in output_text_embedding]
         return sim
