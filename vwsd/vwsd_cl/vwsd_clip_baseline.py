@@ -97,7 +97,7 @@ def main():
             output.append((sim, text))
             tmp = sorted(zip(sim, d['candidate images']), key=lambda x: x[0], reverse=True)
             ranked_candidate = [os.path.basename(i[1]) for i in tmp]
-            relevance = [i[0].tolist()[0] * 0.01 for i in tmp]
+            relevance = [i[0][0] for i in tmp]
             result.append({
                 'language': opt.language,
                 'data': n,
