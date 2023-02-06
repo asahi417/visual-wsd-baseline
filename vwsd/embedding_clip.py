@@ -90,5 +90,5 @@ class CLIP:
             output_image_embedding.unsqueeze(1).repeat((1, len(output_text_embedding), 1)),
             output_text_embedding.unsqueeze(0).repeat((len(output_image_embedding), 1, 1))
         ) * 100  # image size x text size
-        return sim.cpu().numpy().tolist()
+        return sim.cpu().numpy().T.tolist()
 
