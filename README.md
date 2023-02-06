@@ -8,6 +8,11 @@ cd vwsd_experiment
 pip install .
 ```
 
+## Run
+```shell
+vwsd-clip-baseline -l en
+```
+
 ## Baseline with CLIP
 
 

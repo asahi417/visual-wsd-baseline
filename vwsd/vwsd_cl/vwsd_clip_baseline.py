@@ -70,6 +70,8 @@ def main():
 
     # sanity check
     assert all("<>" in p for p in opt.prompt), "prompt need to contain `<>`"
+    if opt.output_dir is None:
+        opt.output_dir = f"result/{opt.language}"
     os.makedirs(opt.output_dir, exist_ok=True)
 
     # load dataset
