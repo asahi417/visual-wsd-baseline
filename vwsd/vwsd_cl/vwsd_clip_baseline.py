@@ -22,6 +22,7 @@ def main():
     parser.add_argument('--input-type', help='input text type',
                         type=str, nargs='+', default=['target word', 'target phrase'])
     parser.add_argument('-b', '--batch-size', help='batch size', default=None, type=int)
+    parser.add_argument('--plot', help='', action='store_true')
     opt = parser.parse_args()
 
     # sanity check
@@ -48,6 +49,13 @@ def main():
             prompt_list += [(p.replace("<>", d[input_type]), input_type, p) for p in opt.prompt]
 
         sim = clip.get_similarity(texts=[p[0] for p in prompt_list], images=d['candidate images'], batch_size=opt.batch_size)
+        if opt.plot:
+            plot(
+                similarity=sim,
+                texts=[p[0] for p in prompt_list],
+                images=d['candidate images'],
+                export_file=pj(opt.output_dir, "visualization", opt.language, f'similarity.{n}.png')
+            )
         for (text, input_type, prompt_type), s in zip(prompt_list, sim):
             tmp = sorted(zip(s, d['candidate images']), key=lambda x: x[0], reverse=True)
             result.append({
@@ -59,13 +67,6 @@ def main():
                 'input_type': input_type,
                 'prompt': prompt_type
             })
-
-        # plot(
-        #     similarity=np.concatenate([i[0] for i in output], 1).T,
-        #     texts=[i[1] for i in output],
-        #     images=d['candidate images'],
-        #     export_file=pj(opt.output_dir, "visualization", f'similarity.{n}.png')
-        # )
 
     df = pd.DataFrame(result)
     for (prompt, input_type), g in df.groupby(['prompt', 'input_type']):
