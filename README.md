@@ -12,7 +12,7 @@ pip install .
 
 
 <p align="center">
-  <img src="result/clip_vit_large_patch14_336/similarity.0.png" width="700">
+  <img src="result/visualization/en/similarity.0.png" width="700">
 </p>
 
 As a baseline to solve V-WSD, we use [CLIP](https://arxiv.org/abs/2103.00020) to compute the text and image embeddings, 
@@ -29,69 +29,21 @@ For each query (target word/full phrase) and candidate images, model will assign
 To compute the ranking metrics, run following `vwsd-ranking-metric` command.
 
 ```shell
-vwsd-ranking-metric [-h] [-r RANKING_FILES [RANKING_FILES ...]] [-m METRICS [METRICS ...]] [-e EXPORT]
-
-compute ranking metrics
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -r RANKING_FILES [RANKING_FILES ...], --ranking-files RANKING_FILES [RANKING_FILES ...]
-                        directly of model prediction
-  -m METRICS [METRICS ...], --metrics METRICS [METRICS ...]
-                        metrics to report (see https://amenra.github.io/ranx/metrics/)
-  -e EXPORT, --export EXPORT
-                        export file
-```
-Model prediction file should be a list of dictionary including 
-```shell
-{
-  "data": 0,
-  "gold": "image.172.jpg",
-  "candidate": ["image.173.jpg", "image.180.jpg", "image.176.jpg", "image.172.jpg", "image.178.jpg", "image.181.jpg", "image.174.jpg", "image.175.jpg", "image.177.jpg", "image.179.jpg"],
-  "relevance": [0.34015846252441406, 0.24420318603515626, 0.23036952972412109, 0.21879930496215821, 0.21160614013671875, 0.2113100242614746, 0.20634710311889648, 0.20474609375, 0.18968523025512696, 0.18504663467407226],
-  "prompt": "This is <>.",
-  "input_type": "Target word"
-}
+vwsd-ranking-metric -p result/Example_of_an_image_caption_that_explains_mask..target_phrase -r gold.txt
+vwsd-ranking-metric -p result/Example_of_an_image_caption_that_explains_mask..target_word -r gold.txt
+vwsd-ranking-metric -p result/mask.target_phrase -r gold.txt
+vwsd-ranking-metric -p result/mask.target_word -r gold.txt
+vwsd-ranking-metric -p result/This_is_mask..target_phrase -r gold.txt
+vwsd-ranking-metric -p result/This_is_mask..target_word -r gold.txt
 ```
 
-For example, ranking metric of the CLIP baseline can be obtained by running commands below.
-```shell
-vwsd-ranking-metric -r 'result/*/result.json' -m "hit_rate@1" "map@5" "mrr@5" "ndcg@5" "map@10" "mrr@10" "ndcg@10" -e clip_baseline_result.csv
-```
+### Baseline Results
 
-## CLIP Baseline Ranking Metrics
-Here is the table to report the ranking metrics across different prompts, input types and CLIP variants.
-
-- Full Phrase (eg. `andromeda tree`, `bank erosion`)
-
-|   hit_rate@1 |   map@5 |   mrr@5 |   ndcg@5 |   map@10 |   mrr@10 |   ndcg@10 | prompt                                        | model                      |
-|-------------:|--------:|--------:|---------:|---------:|---------:|----------:|:----------------------------------------------|:---------------------------|
-|         56.2 |    72.4 |    72.4 |     77.8 |     73.4 |     73.4 |      80.1 | <>                                            | clip_vit_base_patch32      |
-|         56.2 |    66.9 |    66.9 |     73.4 |     67.6 |     67.6 |      75.3 | Example of an image caption that explains <>. | clip_vit_base_patch32      |
-|         37.5 |    62   |    62   |     71.6 |     62   |     62   |      71.6 | This is <>.                                   | clip_vit_base_patch32      |
-|         50   |    66.7 |    66.7 |     72   |     68.3 |     68.3 |      76   | <>                                            | clip_vit_large_patch14     |
-|         43.8 |    58.5 |    58.5 |     65.7 |     60.2 |     60.2 |      69.8 | Example of an image caption that explains <>. | clip_vit_large_patch14     |
-|         56.2 |    68.2 |    68.2 |     73.1 |     70   |     70   |      77.2 | This is <>.                                   | clip_vit_large_patch14     |
-|         56.2 |    72.1 |    72.1 |     77.6 |     73.1 |     73.1 |      79.8 | <>                                            | clip_vit_base_patch16      |
-|         56.2 |    66.7 |    66.7 |     71.8 |     68.6 |     68.6 |      76.1 | Example of an image caption that explains <>. | clip_vit_base_patch16      |
-|         50   |    67.4 |    67.4 |     74   |     68.4 |     68.4 |      76.2 | This is <>.                                   | clip_vit_base_patch16      |
-|         50   |    67.9 |    67.9 |     74.4 |     68.8 |     68.8 |      76.5 | <>                                            | clip_vit_large_patch14_336 |
-|         43.8 |    59.6 |    59.6 |     67.9 |     60.6 |     60.6 |      70.2 | Example of an image caption that explains <>. | clip_vit_large_patch14_336 |
-|         62.5 |    71.4 |    71.4 |     75.4 |     73.1 |     73.1 |      79.6 | This is <>.                                   | clip_vit_large_patch14_336 |
-
-- Target Word Only (eg. `andromeda`, `bank`)
-
-|   hit_rate@1 |   map@5 |   mrr@5 |   ndcg@5 |   map@10 |   mrr@10 |   ndcg@10 | prompt                                        | model                      |
-|-------------:|--------:|--------:|---------:|---------:|---------:|----------:|:----------------------------------------------|:---------------------------|
-|         50   |    61.1 |    61.1 |     66.1 |     64.1 |     64.1 |      72.7 | <>                                            | clip_vit_base_patch32      |
-|         50   |    59.1 |    59.1 |     63   |     62   |     62   |      70.7 | Example of an image caption that explains <>. | clip_vit_base_patch32      |
-|         37.5 |    50   |    50   |     54.7 |     54.6 |     54.6 |      65.2 | This is <>.                                   | clip_vit_base_patch32      |
-|         50   |    57.7 |    57.7 |     61.9 |     61.1 |     61.1 |      70   | <>                                            | clip_vit_large_patch14     |
-|         31.2 |    43.4 |    43.4 |     49.6 |     47.4 |     47.4 |      59.5 | Example of an image caption that explains <>. | clip_vit_large_patch14     |
-|         37.5 |    49.9 |    49.9 |     56   |     53.3 |     53.3 |      64.2 | This is <>.                                   | clip_vit_large_patch14     |
-|         43.8 |    59.1 |    59.1 |     66.1 |     60.5 |     60.5 |      70   | <>                                            | clip_vit_base_patch16      |
-|         37.5 |    51   |    51   |     57   |     54.6 |     54.6 |      65.4 | Example of an image caption that explains <>. | clip_vit_base_patch16      |
-|         43.8 |    57.8 |    57.8 |     65.1 |     59.5 |     59.5 |      69.2 | This is <>.                                   | clip_vit_base_patch16      |
-|         50   |    57.8 |    57.8 |     60.6 |     62.4 |     62.4 |      71.1 | <>                                            | clip_vit_large_patch14_336 |
-|         25   |    40.3 |    40.3 |     47.4 |     44.6 |     44.6 |      57.6 | Example of an image caption that explains <>. | clip_vit_large_patch14_336 |
-|         37.5 |    50.1 |    50.1 |     57.6 |     52.7 |     52.7 |      63.8 | This is <>.                                   | clip_vit_large_patch14_336 |
+| model                                                                |   hit_rate@1/en |   map@5/en |   mrr@5/en |   ndcg@5/en |   map@10/en |   mrr@10/en |   ndcg@10/en |   hit_rate@1/fa |   map@5/fa |   mrr@5/fa |   ndcg@5/fa |   map@10/fa |   mrr@10/fa |   ndcg@10/fa |   hit_rate@1/it |   map@5/it |   mrr@5/it |   ndcg@5/it |   map@10/it |   mrr@10/it |   ndcg@10/it |   hit_rate@1/avg |   map@5/avg |   mrr@5/avg |   ndcg@5/avg |   map@10/avg |   mrr@10/avg |   ndcg@10/avg |
+|:---------------------------------------------------------------------|----------------:|-----------:|-----------:|------------:|------------:|------------:|-------------:|----------------:|-----------:|-----------:|------------:|------------:|------------:|-------------:|----------------:|-----------:|-----------:|------------:|------------:|------------:|-------------:|-----------------:|------------:|------------:|-------------:|-------------:|-------------:|--------------:|
+| result/Example_of_an_image_caption_that_explains_mask..target_phrase |         50.324  |    65.2592 |    65.2592 |     71.162  |     66.8163 |     66.8163 |      74.8529 |            18.5 |    34.2583 |    34.2583 |     41.9426 |     38.905  |     38.905  |      53.1431 |         19.0164 |    32.0492 |    32.0492 |     38.2175 |     37.596  |     37.596  |      51.9219 |          29.2801 |     43.8556 |     43.8556 |      50.4407 |      47.7724 |      47.7724 |       59.9726 |
+| result/Example_of_an_image_caption_that_explains_mask..target_word   |         29.1577 |    44.964  |    44.964  |     52.1259 |     48.3614 |     48.3614 |      60.4849 |            16.5 |    31.4083 |    31.4083 |     38.9235 |     36.3502 |     36.3502 |      51.0824 |         13.4426 |    23.6448 |    23.6448 |     28.9363 |     30.5109 |     30.5109 |      46.1987 |          19.7001 |     33.339  |     33.339  |      39.9953 |      38.4075 |      38.4075 |       52.5887 |
+| result/mask.target_phrase                                            |         60.4752 |    72.8582 |    72.8582 |     77.7656 |     73.8763 |     73.8763 |      80.2202 |            28.5 |    43.1917 |    43.1917 |     50.5394 |     46.6974 |     46.6974 |      59.1721 |         22.623  |    38.4809 |    38.4809 |     45.7448 |     42.6063 |     42.6063 |      55.9699 |          37.1994 |     51.5102 |     51.5102 |      58.0166 |      54.3933 |      54.3933 |       65.1207 |
+| result/mask.target_word                                              |         35.4212 |    51.8862 |    51.8862 |     58.8232 |     54.4272 |     54.4272 |      65.2186 |            20.5 |    34.5833 |    34.5833 |     42.1285 |     38.9635 |     38.9635 |      53.0641 |         11.4754 |    22.541  |    22.541  |     28.1829 |     29.2006 |     29.2006 |      45.1744 |          22.4655 |     36.3369 |     36.3369 |      43.0449 |      40.8638 |      40.8638 |       54.4857 |
+| result/This_is_mask..target_phrase                                   |         61.3391 |    73.7221 |    73.7221 |     78.6229 |     74.6562 |     74.6562 |      80.8288 |            23   |    39.675  |    39.675  |     47.8827 |     43.1677 |     43.1677 |      56.5028 |         23.6066 |    40.694  |    40.694  |     48.1727 |     44.585  |     44.585  |      57.6038 |          35.9819 |     51.3637 |     51.3637 |      58.2261 |      54.1363 |      54.1363 |       64.9784 |
+| result/This_is_mask..target_word                                     |         34.3413 |    50.7883 |    50.7883 |     57.969  |     53.4535 |     53.4535 |      64.4897 |            19.5 |    33.7167 |    33.7167 |     41.0074 |     38.375  |     38.375  |      52.592  |         15.082  |    28.5137 |    28.5137 |     34.4631 |     34.7077 |     34.7077 |      49.6778 |          22.9744 |     37.6729 |     37.6729 |      44.4798 |      42.1787 |      42.1787 |       55.5865 |
