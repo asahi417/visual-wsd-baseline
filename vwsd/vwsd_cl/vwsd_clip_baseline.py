@@ -1,6 +1,5 @@
 """ Baseline of solving V-WSD with CLIP """
 import argparse
-import json
 import logging
 import os
 from os.path import join as pj
@@ -68,15 +67,13 @@ def main():
         #     export_file=pj(opt.output_dir, "visualization", f'similarity.{n}.png')
         # )
 
-    # with open(pj(opt.output_dir, 'result.json'), 'w') as f:
-    #     f.write('\n'.join([json.dumps(i) for i in result]))
     df = pd.DataFrame(result)
     for (prompt, input_type), g in df.groupby(['prompt', 'input_type']):
         path = pj(opt.output_dir, f'{prompt.replace("<>", "mask")}.{input_type}'.replace(" ", "_"))
         os.makedirs(path, exist_ok=True)
         with open(pj(path, f'prediction.{opt.language}.txt'), 'w') as f:
             f.write('\n'.join(['\t'.join(x) for x in g.sort_values(by=['data'])['candidate'].to_list()]))
-        g.to_csv(pj(path, f'full_result.{opt.language}.txt'), index=False)
+        g.to_csv(pj(path, f'full_result.{opt.language}.csv'), index=False)
 
 
 if __name__ == '__main__':
