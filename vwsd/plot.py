@@ -30,6 +30,8 @@ def plot(similarity, texts, images, export_file, gold_image_index=None):
     if gold_image_index is not None:
         plt.xticks(range(len(images)), ['' if i != gold_image_index else 'True Image' for i in range(len(images))],
                    fontsize=18)
+    else:
+        plt.xticks(range(len(images)), fontsize=18)
     for i, image in enumerate(images):
         plt.imshow(Image.open(image).convert("RGB"), extent=(i - 0.5, i + 0.5, -2.0, -1), origin="lower")
 
