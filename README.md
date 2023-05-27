@@ -47,3 +47,23 @@ vwsd-ranking-metric -p result/This_is_mask..target_word -r gold.txt
 | result/mask.target_word                                              |          0.544272 |          0.354212 |        0.354212 |   0.518862 |   0.518862 |    0.588232 |    0.544272 |    0.544272 |     0.652186 |          0.389635 |             0.205 |           0.205 |   0.345833 |   0.345833 |    0.421285 |    0.389635 |    0.389635 |     0.530641 |          0.292006 |          0.114754 |        0.114754 |   0.22541  |   0.22541  |    0.281829 |    0.292006 |    0.292006 |     0.451744 |           0.408638 |           0.224655 |         0.224655 |    0.363369 |    0.363369 |     0.430449 |     0.408638 |     0.408638 |      0.544857 |
 | result/This_is_mask..target_phrase                                   |          0.746562 |          0.613391 |        0.613391 |   0.737221 |   0.737221 |    0.786229 |    0.746562 |    0.746562 |     0.808288 |          0.431677 |             0.23  |           0.23  |   0.39675  |   0.39675  |    0.478827 |    0.431677 |    0.431677 |     0.565028 |          0.44585  |          0.236066 |        0.236066 |   0.40694  |   0.40694  |    0.481727 |    0.44585  |    0.44585  |     0.576038 |           0.541363 |           0.359819 |         0.359819 |    0.513637 |    0.513637 |     0.582261 |     0.541363 |     0.541363 |      0.649784 |
 | result/This_is_mask..target_word                                     |          0.534535 |          0.343413 |        0.343413 |   0.507883 |   0.507883 |    0.57969  |    0.534535 |    0.534535 |     0.644897 |          0.38375  |             0.195 |           0.195 |   0.337167 |   0.337167 |    0.410074 |    0.38375  |    0.38375  |     0.52592  |          0.347077 |          0.15082  |        0.15082  |   0.285137 |   0.285137 |    0.344631 |    0.347077 |    0.347077 |     0.496778 |           0.421787 |           0.229744 |         0.229744 |    0.376729 |    0.376729 |     0.444798 |     0.421787 |     0.421787 |      0.555865 |
+
+
+**Citation:**
+Please cite the following paper if you use the data or code in this repo.
+
+```
+@inproceedings{raganato-etal-2023-semeval,
+    title = "{S}em{E}val-2023 {T}ask 1: {V}isual {W}ord {S}ense {D}isambiguation",
+    author = "Raganato, Alessandro  and
+      Calixto, Iacer and
+      Ushio, Asahi and
+      Camacho-Collados, Jose  and
+      Pilehvar, Mohammad Taher",
+    booktitle = "Proceedings of the 17th International Workshop on Semantic Evaluation (SemEval-2023)",
+    month = jul,
+    year = "2023",
+    address = "Toronto, Canada",
+    publisher = "Association for Computational Linguistics",
+}
+```
